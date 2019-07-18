@@ -273,25 +273,11 @@ int main(int argc, char* argv[])
         }
     }
 
-    //heigth and size-----------------
+    //initial heigth and size-----------------
 
-    // float window_width = 1280.0f; //4:3
-    // float window_height = 960.0f;
+     float window_width = 1280.0f; //4:3
+     float window_height = 960.0f;
 
-	float window_width = 1280; // 720p
-	float window_height = 720.f;
-	
-    //float window_width = 1920.0f; //hd 1080 (16:9)
-    //float window_height = 1080.0f;
-
-    // float window_width = 2048.0f; //2k (17:9)
-    // float window_height = 1080.0f;
-
-    // float window_width = 4096.0f; //4k (17:9)
-    // float window_height = 2160.0f;
-
-    // float window_width = 3840.0f; //UHD-1 (17:9)
-    // float window_height = 2160.0f;
     //SDL INIT-----------------------------------------------------------------
     SDL_Init(SDL_INIT_VIDEO|SDL_INIT_GAMECONTROLLER  | SDL_INIT_HAPTIC);
 
