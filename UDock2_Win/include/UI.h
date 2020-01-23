@@ -208,35 +208,39 @@ void docking_UI( SDL_Window* window,scene_docking_data& docking_data ){
 
         if (ImGui::Button("Save"))
         {
-     //        // writePDB(Molecule mol, const std::string filename, char mode)
-
-	        std::time_t t = std::time(0);   // get time now
+        	std::time_t t = std::time(0);   // get time now
 	    	std::tm* now = std::localtime(&t);
 
 	    	std::string filename = "../savefile/Molecular_Complex-";
 	    	filename += std::to_string(now->tm_year + 1900) + '-' + std::to_string(now->tm_mon + 1)+'-' +std::to_string(now->tm_mday ) ; //add date
-			filename +=  '-' + std::to_string(now->tm_hour)+":"+std::to_string(now->tm_min)+":"+std::to_string(now->tm_sec);// add time
+			filename +=  '-' + std::to_string(now->tm_hour)+"_"+std::to_string(now->tm_min)+"_"+std::to_string(now->tm_sec);// add time
 			filename += ".pdb";
 	    	std::cout << filename << std::endl;
 	 
 	 		
-			int nbmol = docking_data.mh->molecules.size();
+		int nbmol = docking_data.mh->molecules.size();
 
-            int nbAtom=1;
-			std::string alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-			FILE* file = fopen(filename.c_str(), "a");
-			fprintf(file, "REMARK   1  score %f \n",docking_data.mh->energy);
-			for (int i = 0; i < nbmol; ++i)
+            	int nbAtom=1;
+		std::string alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+		FILE* file = fopen(filename.c_str(), "a");
+            	if (!file) {
+                	perror(filename.c_str());
+                	std::cout << "File opening failed" << std::endl;
+                
+            	}
+
+		fprintf(file, "REMARK   1  score %f \n",docking_data.mh->energy);
+		for (int i = 0; i < nbmol; ++i)
+		{
+			Molecule mol = docking_data.mh->molecules[i];
+			glm::mat4 transformation =  docking_data.mh->getModelMatrix(i);
+
+
+			for (glm::uint j = 0; j < mol.size(); j++)
 			{
-				Molecule mol = docking_data.mh->molecules[i];
-				glm::mat4 transformation =  docking_data.mh->getModelMatrix(i);
-
-
-			    for (glm::uint j = 0; j < mol.size(); j++)
-			    {
 
 			        const char  chainID = alphabet.at(i%26);
-
+	
 			        Atom at = mol.atoms[j];
 			        const char* atomname = at.atomType.c_str();
 			        const char* residName = at.residueType.c_str();
@@ -244,9 +248,9 @@ void docking_UI( SDL_Window* window,scene_docking_data& docking_data ){
 			        // chainID = at.chain.c_str();
 
 			        int atomnumber = at.atomId;
-                    atomnumber = nbAtom;
+                    		atomnumber = nbAtom;
 
-                    nbAtom++;
+                    		nbAtom++;
 
 			        glm::vec3 coord = glm::vec3(transformation * glm::vec4(at.pos,1.0));
 			        double x = coord.x;
@@ -257,12 +261,12 @@ void docking_UI( SDL_Window* window,scene_docking_data& docking_data ){
 
 			        fprintf(file, "ATOM  %5d %-5s%3s %1c%4d    %8.3f%8.3f%8.3f", atomnumber, atomname, residName, chainID, residnumber, x, y, z);
 			        fprintf(file, "\n");
-			    }
-                fprintf(file, "TER");
-                fprintf(file, "\n");
-			}
-		    fclose(file);
+			 }
+                	fprintf(file, "TER");
+                	fprintf(file, "\n");
 		}
+		fclose(file);
+	}
 
         std::string s;
         if (docking_data.freeze){
