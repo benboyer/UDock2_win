@@ -168,7 +168,7 @@ void docking_render (scene_docking_data &docking_data){
             docking_data.colorShader.setMat4f("view", view);
             docking_data.colorShader.setMat4f("proj", proj);
             docking_data.colorShader.setMat4f("model", glm::translate(glm::mat4(1),docking_data.d_cam->LookAt));
-            docking_data.colorShader.setVec4f("color", glm::vec4(1.0,1.0,0.0,1.0));
+            docking_data.colorShader.setVec4f("color", glm::vec4(0.7,0.92,0.7,1.0));
         
             glDrawArrays(GL_TRIANGLES, 0, docking_data.nbsphereVertices/3);
             glBindVertexArray(0);
@@ -338,7 +338,10 @@ void spaceship_render (scene_spaceship_data &spaceship_data){
 	        glDrawArrays(GL_TRIANGLES, 0, spaceship_data.spaceshipVertices/3);
 	        glBindVertexArray(0);
 
-	        
+            spaceship_data.pe->view = view;
+            spaceship_data.pe->proj = proj;
+            spaceship_data.pe->render();
+
 		}
 
 
@@ -443,9 +446,6 @@ void spaceship_render (scene_spaceship_data &spaceship_data){
 
 
 
-        spaceship_data.pe->view = view;
-        spaceship_data.pe->proj = proj;
-        spaceship_data.pe->render();
 
 
 		if (*spaceship_data.showSkybox){
