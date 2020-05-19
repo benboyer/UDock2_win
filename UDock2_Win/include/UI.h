@@ -7,12 +7,15 @@
 
 #include <ctime>
 #include <iostream>
+#include <fstream> 
 
 #include "MolecularHandler.h"
 #include "Camera.h"
 
 
 #include "scene_data.h"
+
+ 
 
 unsigned int getTexColorBuffer(int window_width,int window_height){
     // generate texture
@@ -97,73 +100,222 @@ void scorePlot( float energy, int screen_width,int screen_height){
 
 
 
-void changeResolution (SDL_Window* window,scene_docking_data& docking_data, int w, int h){
-  // std::cout <<"screen_resolution "<< item << std::endl;
+//void changeResolution (SDL_Window* window,scene_docking_data& docking_data, int w, int h){
+//  // std::cout <<"screen_resolution "<< item << std::endl;
+//
+//                    int old_h,old_w;
+//                    SDL_GetWindowSize(window,&old_h,&old_w);
+//                    if (h!=old_h || w != old_w){
+//                        SDL_SetWindowSize(window,w, h);
+//
+//                        glViewport(0,0,w,h);
+//                        docking_data.d_cam->screen_width = w;//camera for the docking scene
+//                        docking_data.d_cam->screen_height = h;
+//                        docking_data.ss_cam->screen_width = w;//camera for the spaceship scene
+//                        docking_data.ss_cam->screen_height = h;
+//                        //suposedly prevent bug if relative mouse mode activated, shouldn't be a problem at the moment but I'm sure it come up eventually(always do)
+//                        if (SDL_GetRelativeMouseMode())
+//                        {
+//                            SDL_SetRelativeMouseMode(SDL_FALSE);
+//                            SDL_SetRelativeMouseMode(SDL_TRUE);
+//                        }
+//                        glDeleteTextures(1,&docking_data.texColorBuffer);
+//                        glDeleteTextures(1,&docking_data.texDepthBuffer);
+//                        glDeleteFramebuffers(1,&docking_data.framebuffer);
+//
+//
+//                        docking_data.texColorBuffer=getTexColorBuffer(w,h);
+//                        docking_data.texDepthBuffer=getTexDepthBuffer(w,h);
+//                        docking_data.framebuffer = getScreenFramebuffer(docking_data.texColorBuffer,docking_data.texDepthBuffer);
+//                        docking_data.resizeWindows = true;
+//                      }
+//}
 
-                    int old_h,old_w;
-                    SDL_GetWindowSize(window,&old_h,&old_w);
-                    if (h!=old_h || w != old_w){
-                        SDL_SetWindowSize(window,w, h);
+void changeResolution(SDL_Window* window, scene_docking_data& docking_data, int w, int h) {
+    // std::cout <<"screen_resolution "<< item << std::endl;
 
-                        glViewport(0,0,w,h);
-                        docking_data.d_cam->screen_width = w;//camera for the docking scene
-                        docking_data.d_cam->screen_height = h;
-                        docking_data.ss_cam->screen_width = w;//camera for the spaceship scene
-                        docking_data.ss_cam->screen_height = h;
-                        //suposedly prevent bug if relative mouse mode activated, shouldn't be a problem at the moment but I'm sure it come up eventually(always do)
-                        if (SDL_GetRelativeMouseMode())
-                        {
-                            SDL_SetRelativeMouseMode(SDL_FALSE);
-                            SDL_SetRelativeMouseMode(SDL_TRUE);
-                        }
-                        glDeleteTextures(1,&docking_data.texColorBuffer);
-                        glDeleteTextures(1,&docking_data.texDepthBuffer);
-                        glDeleteFramebuffers(1,&docking_data.framebuffer);
+    int old_h, old_w;
+    SDL_GetWindowSize(window,  &old_w, & old_h);
+  
+    if (h != old_h || w != old_w) {
+        std::cout << "diff "<< h << " " << w << " / "<< old_h <<" "<< old_w << std::endl;
+         
+        SDL_SetWindowSize(window, w, h);
 
+        SDL_GetWindowSize(window, &old_w, &old_h);
+        std::cout << old_h << " " << old_w << std::endl;
 
-                        docking_data.texColorBuffer=getTexColorBuffer(w,h);
-                        docking_data.texDepthBuffer=getTexDepthBuffer(w,h);
-                        docking_data.framebuffer = getScreenFramebuffer(docking_data.texColorBuffer,docking_data.texDepthBuffer);
-                        docking_data.resizeWindows = true;
-                      }
+        glViewport(0, 0, w, h);
+        docking_data.d_cam->screen_width = w;//camera for the docking scene
+        docking_data.d_cam->screen_height = h;
+        docking_data.ss_cam->screen_width = w;//camera for the spaceship scene
+        docking_data.ss_cam->screen_height = h;
+        //suposedly prevent bug if relative mouse mode activated, shouldn't be a problem at the moment but I'm sure it come up eventually(always do)
+        if (SDL_GetRelativeMouseMode())
+        {
+            SDL_SetRelativeMouseMode(SDL_FALSE);
+            SDL_SetRelativeMouseMode(SDL_TRUE);
+        }
+
+        glDeleteTextures(1, &docking_data.texColorBuffer);
+        glDeleteTextures(1, &docking_data.texDepthBuffer);
+        glDeleteFramebuffers(1, &docking_data.framebuffer);
+       
+
+        docking_data.texColorBuffer = getTexColorBuffer(w, h);
+        docking_data.texDepthBuffer = getTexDepthBuffer(w, h);
+        docking_data.framebuffer = getScreenFramebuffer(docking_data.texColorBuffer, docking_data.texDepthBuffer);
+        docking_data.resizeWindows = true;
+
+        //SDL_UpdateWindowSurface(window); 
+        SDL_Event sdlevent;
+        sdlevent.type = SDL_WINDOWEVENT;
+        sdlevent.window.event = SDL_WINDOWEVENT_MOVED;
+
+        int succes = SDL_PushEvent(&sdlevent);
+        std::cout << "push ? " << succes << std::endl;
+
+    }
 }
 
+
+
 void optionWindow (SDL_Window* window,scene_docking_data& docking_data,bool* open){
-			int width = docking_data.d_cam->screen_width;
-    		int height = docking_data.d_cam->screen_height;
-            ImGui::SetNextWindowPos(ImVec2(width/2 - width/4 ,height/2-height/4),true);
-            ImGui::SetNextWindowSize(ImVec2(width/2,height/2),true);
-            if(!ImGui::Begin("Gaphical Option",open,ImGuiWindowFlags_NoResize|ImGuiWindowFlags_NoMove))
-            {
-		        ImGui::End();
-		    }else{
-                static int item = 1;
-                ImGui::Combo("screen resolution", &item, " 1024x768\0 1280x960\0 1920x1080(hd 1080)\0 2048x1080(2K)\0 4096x2160(4k)\0 3840x2160(UHD-1)\0\0");
-            // std::cout <<"screen_resolution "<< item << std::endl;
-                if(item == 0){changeResolution (window,docking_data,1024,768);}
-                if(item == 1){changeResolution (window,docking_data,1280,960);}
-                if(item == 2){changeResolution (window,docking_data,1920,1080);}
-                if(item == 3){changeResolution (window,docking_data,2048,1080);}
-                if(item == 4){changeResolution (window,docking_data,4096,2160);}
-                if(item == 5){changeResolution (window,docking_data,3840,2160);}
 
-                ImGui::Checkbox("skybox", docking_data.showSkybox);//already a pointer
-                ImGui::ColorEdit3("background color", (float*)docking_data.bgColor);
-                ImGui::Checkbox("invert Y axis", docking_data.invertedAxis);//already a pointer
-                ImGui::SliderFloat("mouse sensitivity (default 1)",docking_data.mouseSensitivity,0.001f,3.0f,"ratio = %.3f");
-                
-                bool fullscreen;
-                ImGui::Checkbox("fullscreen", &fullscreen);
-                // if (fullscreen){
-                //     SDL_SetWindowFullscreen(window,SDL_WINDOW_FULLSCREEN_DESKTOP);
+    //we never offer the choice of an higher resolution than the display to avoid bug with imgui
+    SDL_DisplayMode DM;
+    SDL_GetCurrentDisplayMode(0, &DM);
+    int displayWidth = DM.w;
+    int displayHeight = DM.h;
+    int nitem = 0;
+    const char* c = "";
+    if (displayWidth >= 1024) {
+        c = " 1024x768\0";
+    }
+    if (displayWidth >= 1280) {
+        c = " 1024x768\0 1280x960\0";
+        nitem++;
+    }
+    if (displayWidth >= 1920) {
+        c = " 1024x768\0 1280x960\0 1920x1080(hd 1080)\0";
+        nitem++;
+    }
+    if (displayWidth >= 2048) {
+        c = " 1024x768\0 1280x960\0 1920x1080(hd 1080)\0 2048x1080(2K)\0";
+        nitem++;
+    }
+    if (displayWidth >= 3840) {
 
-                // }
-                // else{
-                //     SDL_SetWindowFullscreen(window,0);
-                // }
+        c = " 1024x768\0 1280x960\0 1920x1080(hd 1080)\0 2048x1080(2K)\0 3840x2160(UHD - 1)\0";
+        nitem++;
+    }
+    if (displayWidth >= 4096) {
 
-	            ImGui::End();
+        c = " 1024x768\0 1280x960\0 1920x1080(hd 1080)\0 2048x1080(2K)\0 3840x2160(UHD - 1)\0 4096x2160(4k)\0";
+        nitem++;
+    }
+
+
+    int width = docking_data.d_cam->screen_width;
+    int height = docking_data.d_cam->screen_height;
+    ImGui::SetNextWindowPos(ImVec2(width / 2 - width / 4, height / 2 - height / 4), true);
+    ImGui::SetNextWindowSize(ImVec2(width / 2, height / 2), true);
+    if (!ImGui::Begin("Gaphical Option", open, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove))
+    {
+        ImGui::End();
+    }
+    else {
+        static int item = 2;
+        ImGui::Combo("screen resolution", &item, c);
+        //ImGui::Combo("screen resolution", &item, " 1024x768\0 1280x960\0 1920x1080(hd 1080)\0 2048x1080(2K)\0 4096x2160(4k)\0 3840x2160(UHD-1)\0\0");
+        // std::cout <<"screen_resolution "<< item << std::endl;
+        //if (item == 0) { changeResolution(window, docking_data, 1024, 768); }
+        //if (item == 1) { changeResolution(window, docking_data, 1280, 960); }
+        //if (item == 2) { changeResolution(window, docking_data, 1920, 1080); }
+        //if (item == 3) { changeResolution(window, docking_data, 2048, 1080); }
+        //if (item == 4) { changeResolution(window, docking_data, 4096, 2160); }
+        //if (item == 5) { changeResolution(window, docking_data, 3840, 2160); }
+        //the -30 on the max resolution (display resolution) is to avoid a bug with imgui. it's far from elegant but it does the work until we have a better solution. 
+        if (item == 0) {
+            if (item == nitem) { changeResolution(window, docking_data, 1024, 768 - 30); }
+            else { changeResolution(window, docking_data, 1024, 768); }
         }
+        if (item == 1) {
+            if (item == nitem) { changeResolution(window, docking_data, 1280, 960 - 30); }
+            else { changeResolution(window, docking_data, 1280, 960); }
+        }
+        if (item == 2) {
+            if (item == nitem) { changeResolution(window, docking_data, 1920, 1080 - 30); }
+            else { changeResolution(window, docking_data, 1920, 1080); }
+        }
+        if (item == 3) {
+            if (item == nitem) { changeResolution(window, docking_data, 2048, 1080 - 30); }
+            else { changeResolution(window, docking_data, 2048, 1080); }
+        }
+        if (item == 4) {
+            if (item == nitem) { changeResolution(window, docking_data, 1920, 1080 - 30); }
+            else { changeResolution(window, docking_data, 3840, 2160); }
+        }
+        if (item == 5) {
+            if (item == nitem) { changeResolution(window, docking_data, 1920, 1080 - 30); }
+            else { changeResolution(window, docking_data, 4096, 2160); }
+        }
+
+        ImGui::Checkbox("skybox", docking_data.showSkybox);//already a pointer
+        ImGui::ColorEdit3("background color", (float*)docking_data.bgColor);
+        ImGui::Checkbox("invert Y axis", docking_data.invertedAxis);//already a pointer
+        ImGui::SliderFloat("mouse sensitivity (default 1)", docking_data.mouseSensitivity, 0.001f, 3.0f, "ratio = %.3f");
+
+        // bool fullscreen;
+        ImGui::Checkbox("fullscreen", &docking_data.fullscreen);
+        if (docking_data.fullscreen) {
+            SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN_DESKTOP);
+            SDL_DisplayMode dm;
+            SDL_GetDesktopDisplayMode(0, &dm);
+            std::cout << dm.w << " " << dm.h << std::endl;
+            changeResolution(window, docking_data, dm.w, dm.h);
+        }
+        else {
+            SDL_SetWindowFullscreen(window, 0);
+        }
+
+        ImGui::End();
+    }
+			//int width = docking_data.d_cam->screen_width;
+   // 		int height = docking_data.d_cam->screen_height;
+   //         ImGui::SetNextWindowPos(ImVec2(width/2 - width/4 ,height/2-height/4),true);
+   //         ImGui::SetNextWindowSize(ImVec2(width/2,height/2),true);
+   //         if(!ImGui::Begin("Gaphical Option",open,ImGuiWindowFlags_NoResize|ImGuiWindowFlags_NoMove))
+   //         {
+		 //       ImGui::End();
+		 //   }else{
+   //             static int item = 1;
+   //             ImGui::Combo("screen resolution", &item, " 1024x768\0 1280x960\0 1920x1080(hd 1080)\0 2048x1080(2K)\0 4096x2160(4k)\0 3840x2160(UHD-1)\0\0");
+   //         // std::cout <<"screen_resolution "<< item << std::endl;
+   //             if(item == 0){changeResolution (window,docking_data,1024,768);}
+   //             if(item == 1){changeResolution (window,docking_data,1280,960);}
+   //             if(item == 2){changeResolution (window,docking_data,1920,1080);}
+   //             if(item == 3){changeResolution (window,docking_data,2048,1080);}
+   //             if(item == 4){changeResolution (window,docking_data,4096,2160);}
+   //             if(item == 5){changeResolution (window,docking_data,3840,2160);}
+
+   //             ImGui::Checkbox("skybox", docking_data.showSkybox);//already a pointer
+   //             ImGui::ColorEdit3("background color", (float*)docking_data.bgColor);
+   //             ImGui::Checkbox("invert Y axis", docking_data.invertedAxis);//already a pointer
+   //             ImGui::SliderFloat("mouse sensitivity (default 1)",docking_data.mouseSensitivity,0.001f,3.0f,"ratio = %.3f");
+   //             
+   //             bool fullscreen;
+   //             ImGui::Checkbox("fullscreen", &fullscreen);
+   //             // if (fullscreen){
+   //             //     SDL_SetWindowFullscreen(window,SDL_WINDOW_FULLSCREEN_DESKTOP);
+
+   //             // }
+   //             // else{
+   //             //     SDL_SetWindowFullscreen(window,0);
+   //             // }
+
+	  //          ImGui::End();
+        //}
 }
 
 
@@ -208,7 +360,9 @@ void docking_UI( SDL_Window* window,scene_docking_data& docking_data ){
 
         if (ImGui::Button("Save"))
         {
-        	std::time_t t = std::time(0);   // get time now
+     //        // writePDB(Molecule mol, const std::string filename, char mode)
+
+	        std::time_t t = std::time(0);   // get time now
 	    	std::tm* now = std::localtime(&t);
 
 	    	std::string filename = "../savefile/Molecular_Complex-";
@@ -218,29 +372,29 @@ void docking_UI( SDL_Window* window,scene_docking_data& docking_data ){
 	    	std::cout << filename << std::endl;
 	 
 	 		
-		int nbmol = docking_data.mh->molecules.size();
+			int nbmol = docking_data.mh->molecules.size();
 
-            	int nbAtom=1;
-		std::string alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-		FILE* file = fopen(filename.c_str(), "a");
-            	if (!file) {
-                	perror(filename.c_str());
-                	std::cout << "File opening failed" << std::endl;
+            int nbAtom=1;
+			std::string alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+			FILE* file = fopen(filename.c_str(), "a");
+            if (!file) {
+                perror(filename.c_str());
+                std::cout << "File opening failed" << std::endl;
                 
-            	}
+            }
 
-		fprintf(file, "REMARK   1  score %f \n",docking_data.mh->energy);
-		for (int i = 0; i < nbmol; ++i)
-		{
-			Molecule mol = docking_data.mh->molecules[i];
-			glm::mat4 transformation =  docking_data.mh->getModelMatrix(i);
-
-
-			for (glm::uint j = 0; j < mol.size(); j++)
+			fprintf(file, "REMARK   1  score %f \n",docking_data.mh->energy);
+			for (int i = 0; i < nbmol; ++i)
 			{
+				Molecule mol = docking_data.mh->molecules[i];
+				glm::mat4 transformation =  docking_data.mh->getModelMatrix(i);
+
+
+			    for (glm::uint j = 0; j < mol.size(); j++)
+			    {
 
 			        const char  chainID = alphabet.at(i%26);
-	
+
 			        Atom at = mol.atoms[j];
 			        const char* atomname = at.atomType.c_str();
 			        const char* residName = at.residueType.c_str();
@@ -248,9 +402,9 @@ void docking_UI( SDL_Window* window,scene_docking_data& docking_data ){
 			        // chainID = at.chain.c_str();
 
 			        int atomnumber = at.atomId;
-                    		atomnumber = nbAtom;
+                    atomnumber = nbAtom;
 
-                    		nbAtom++;
+                    nbAtom++;
 
 			        glm::vec3 coord = glm::vec3(transformation * glm::vec4(at.pos,1.0));
 			        double x = coord.x;
@@ -261,12 +415,12 @@ void docking_UI( SDL_Window* window,scene_docking_data& docking_data ){
 
 			        fprintf(file, "ATOM  %5d %-5s%3s %1c%4d    %8.3f%8.3f%8.3f", atomnumber, atomname, residName, chainID, residnumber, x, y, z);
 			        fprintf(file, "\n");
-			 }
-                	fprintf(file, "TER");
-                	fprintf(file, "\n");
+			    }
+                fprintf(file, "TER");
+                fprintf(file, "\n");
+			}
+		    fclose(file);
 		}
-		fclose(file);
-	}
 
         std::string s;
         if (docking_data.freeze){
