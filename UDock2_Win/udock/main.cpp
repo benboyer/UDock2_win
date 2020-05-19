@@ -275,8 +275,12 @@ int main(int argc, char* argv[])
 
     //initial heigth and size-----------------
 
-     float window_width = 1280.0f; //4:3
-     float window_height = 960.0f;
+     //float window_width = 1280.0f; //4:3
+     //float window_height = 960.0f;
+
+     float window_width = 1920.0f; 
+     float window_height = 1080.0f;
+
 
     //SDL INIT-----------------------------------------------------------------
     SDL_Init(SDL_INIT_VIDEO|SDL_INIT_GAMECONTROLLER  | SDL_INIT_HAPTIC);
@@ -693,6 +697,7 @@ int main(int argc, char* argv[])
     spaceship_data.texDepthBuffer= getTexDepthBuffer(window_width, window_height);
     spaceship_data.framebuffer = getScreenFramebuffer(spaceship_data.texColorBuffer,spaceship_data.texDepthBuffer);
     docking_data.resizeWindows = false;
+    docking_data.fullscreen = false;
     //shader to render the framebuffer on the screen quad
     Shader screenQuadShader = basicShader("../shaders/screen.vertex.glsl","../shaders/screen.fragment.glsl");
 
